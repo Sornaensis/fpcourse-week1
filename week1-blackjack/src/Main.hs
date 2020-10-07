@@ -74,7 +74,7 @@ netWinnings = (\m -> m - startingMoney) . cash
 
 -- In blackjack face cards are worth 10, other cards are worth their index value (1-10)
 -- Aces are special but only counted when we consider the whole hand
--- fromEnum 0-whatever + 1
+-- fromEnum card + 1  == index value of the card 0-whatever + 1
 -- | ****** FILL IN FUNCTION *******
 cardValue :: Card -> Int
 cardValue c@(Card _ face) = undefined
@@ -102,12 +102,9 @@ dealerHand game = case dealerFaceDown game of
 
 -- | Game Actions
 dealPlayer :: BlackJackGame -> BlackJackGame
-dealPlayer game = game { deck = deck', playerHand = hand' } 
+dealPlayer game = game { deck = deck', playerHand = card ++ playerHand game } 
           where
           (deck', card) = deal game
-          hand'          = case card of
-                           Just c -> c : playerHand game
-                           _      -> playerHand game
           
 
 dealDealer :: BlackJackGame -> BlackJackGame
@@ -115,15 +112,15 @@ dealDealer game = newState
           where
           (deck', card)  = deal game
           faceDownCard = dealerFaceDown game
-          newState | faceDownCard == Nothing = game { deck = deck', dealerFaceDown = card } 
-                   | otherwise               = game { deck = deck', dealerFaceUp   = case card of
-                                                                                      Just c -> c : dealerFaceUp game
-                                                                                      _      -> dealerFaceUp game  }
+          newState | faceDownCard == Nothing = game { deck = deck', dealerFaceDown = if null card then Nothing else Just (head card) } 
+                   | otherwise               = game { deck = deck', dealerFaceUp   = card ++ dealerFaceUp game }
 
-deal :: BlackJackGame -> (Deck, Maybe Card)
-deal game = (deck', card)
+deal :: BlackJackGame -> (Deck, [Card])
+deal game = (deck', cardToList card)
           where
           (card, deck') = draw . deck $ game
+          cardToList (Just c) = [c]
+          cardToList Nothing  = [] 
 
 -- Update the game with a bet
 bet :: Money -> BlackJackGame -> BlackJackGame
@@ -208,4 +205,3 @@ main = do
       game    = newGame deck
       player  = newPlayer name
   play player game
-

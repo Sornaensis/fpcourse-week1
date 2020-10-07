@@ -70,6 +70,11 @@ newDeck = Deck $ do
   s <- suits
   f <- faces
   return $ Card s f
+-- for ( Suit s : suits ) {
+  -- for ( Face f : faces ) {
+--       list.add( new Card( s, f ) );
+  -- }
+-- }
 
 putOnTop :: Deck -> Card -> Deck
 putOnTop (Deck cards) card = Deck $ card : cards
