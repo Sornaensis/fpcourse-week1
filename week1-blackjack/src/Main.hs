@@ -35,7 +35,7 @@ data Action    = Hit
                 | Bet Money
                 | Stand
                 | Quit
-                | NewGame deriving (Eq,Show)
+                | NewGame Deck deriving (Eq,Show)
 
 data GamePhase = Started
                | Main 
@@ -162,11 +162,14 @@ getAction Main = do
 getAction (Ended _) = do
   putStrLn "New Game?"
   res <- map toLower <$> getLine
-  return $
-    case res of 
-      "y"   -> NewGame
-      "yes" -> NewGame
-      _   -> Quit
+  case res of 
+    "y"   -> mkNewGame
+    "yes" -> mkNewGame
+    _     -> return Quit
+  where
+  mkNewGame = do
+    rand <- newStdGen
+    return . NewGame $ shuffle rand . foldr1 combineDecks $ replicate 4 newDeck
 
 -- | ****** COMPLETE THE FUNCTION *******
 play :: Player -> BlackJackGame -> IO ()
